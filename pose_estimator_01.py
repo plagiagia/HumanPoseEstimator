@@ -87,7 +87,7 @@ def plot_box(box, img):
     plt.show()
 
 
-def plot_annotaions(annotations, box, img):
+def plot_annotations(annotations, box, img):
     fig, ax = plt.subplots(ncols=2)
     x, y, width, height = box
     ax[0].imshow(img)
