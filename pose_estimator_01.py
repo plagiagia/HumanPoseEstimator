@@ -90,12 +90,26 @@ def plot_box(box, img):
 def plot_annotations(annotations, box, img):
     fig, ax = plt.subplots(ncols=2)
     x, y, width, height = box
+    c_x, c_y = int(x + width), int(y + height)
     ax[0].imshow(img)
-    ax[1].imshow(img[int(y):int(y + height), int(x):int(x + width), :])
+    ax[1].imshow(img[int(y):c_y, int(x):c_x, :])
     for idx, each in enumerate(annotations[2]):
         if each == 2:
             x_ = annotations[0][idx] - x
             y_ = annotations[1][idx] - y
-            ax[1].scatter(x_, y_, s=25)
+            coordinates = (x_, y_)
+            label = image_keypoints[idx]
+            scatter = ax[1].scatter(x_, y_, s=25)
+            if x_ <= width / 2:
+                plt.annotate(label, coordinates, textcoords="offset points", xytext=(10, 30), ha='right',
+                             arrowprops={'color': 'red',
+                                         'arrowstyle': 'simple'}, fontsize=12,
+                             bbox=dict(facecolor='red', alpha=0.5), color='w')
+            else:
+                plt.annotate(label, coordinates, textcoords="offset points", xytext=(10, 30), ha='left',
+                             arrowprops={'color': 'red',
+                                         'arrowstyle': 'simple'}, fontsize=12,
+                             bbox=dict(facecolor='red', alpha=0.5), color='w')
+
     plt.tight_layout()
     plt.show()
