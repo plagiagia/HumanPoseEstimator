@@ -22,6 +22,6 @@ This image shoes that I successfully draw a box around the human and crop the im
 Same image as before but after I found the box coordinates I plot the keypoints the represent all the visible
 body parts of the human depicted on the picture
 
-The jupyter notebook with all the code you can find here: [notebok]('/01.HumanPoseEstimator.ipynb')
+The jupyter notebook with all the code you can find here: [notebok]('https://github.com/plagiagia/HumanPoseEstimator/blob/master/01.HumanPoseEstimator.ipynb')
 
 ## Chapter 2
