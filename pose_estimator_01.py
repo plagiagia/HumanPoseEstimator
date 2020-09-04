@@ -85,3 +85,17 @@ def plot_box(box, img):
     ax[1].imshow(img[int(y):int(y + height), int(x):int(x + width), :])
     plt.tight_layout()
     plt.show()
+
+
+def plot_annotaions(annotations, box, img):
+    fig, ax = plt.subplots(ncols=2)
+    x, y, width, height = box
+    ax[0].imshow(img)
+    ax[1].imshow(img[int(y):int(y + height), int(x):int(x + width), :])
+    for idx, each in enumerate(annotations[2]):
+        if each == 2:
+            x_ = annotations[0][idx] - x
+            y_ = annotations[1][idx] - y
+            ax[1].scatter(x_, y_, s=25)
+    plt.tight_layout()
+    plt.show()
