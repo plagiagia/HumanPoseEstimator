@@ -42,8 +42,13 @@ This is an image of the loss during the training process.
 There is a lot of room for development for this model. The spikes seen on the graph are probably from batch training, and 
 from images that the model has not seen before this batch. Choosing a bigger batch size will probably smooth the loss plot.
 
- 
 
+Following images with the real and predicted labels.
+
+![img](static/results.png)
+
+
+More you can see in my jupyter notebook: [link](02. SHVN CNN.ipynb)
 
 
 
