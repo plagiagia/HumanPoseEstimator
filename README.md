@@ -48,7 +48,7 @@ Following images with the real and predicted labels.
 ![img](static/results.png)
 
 
-More you can see in my jupyter notebook: [link](02. SHVN CNN.ipynb)
+More you can see in my jupyter notebook: [link](02.SHVNCNN.ipynb)
 
 
 
