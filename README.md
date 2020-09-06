@@ -26,4 +26,24 @@ The jupyter notebook with all the code you can find here: [notebok](01.HumanPose
 
 ## Chapter 2
 
+In this chapter I will made and train a CNN (Convolution Neural Network) model to recognise numbers depicted on images with street numbers 
+(SHVN dataset). To solve this problem I am decide to go with the CNN architecture as it thrives in image recognition. 
+
+My model architecture consists of two convolution layers followed with a Batch Normalization layer, 
+a Relu activation function and a Max-Pool layer. The output of the final convolution layer passes through a Dense layer
+ where all dimensions are flattened and then passed to a final Dense layer where a prediction is made.
+ 
+The final accuracy after 100 epochs of training is 92.1212% on the test set.
+
+This is an image of the loss during the training process.
+
+![img](static/loss.png)
+
+There is a lot of room for development for this model. The spikes seen on the graph are probably from batch training, and 
+from images that the model has not seen before this batch. Choosing a bigger batch size will probably smooth the loss plot.
+
+ 
+
+
+
 
