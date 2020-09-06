@@ -126,10 +126,40 @@ for epoch in range(num_epochs):
 
 print("Finish training")
 
+# Plot the results
 x = (range(1, num_epochs + 1))
 
-plt.figure(figsize=(12, 10))
+plt.figure(figsize=(10, 5))
 plt.plot(x, loss_values)
 plt.xlabel('Step')
 plt.ylabel('Loss')
 plt.show()
+
+# Evaluate the model
+model.eval()
+
+with torch.no_grad():
+    correct = 0
+    total = 0
+    for images, labels in test_loader:
+        images, labels = images.to(device), labels.to(device)
+        outputs = model(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+    print('Accuracy of the model on the test images: {:.4f}%)'.format(100 * correct / total))
+
+# Test model performance and check some results
+with torch.no_grad():
+    images, labels = iter(test_loader).next()
+    images = images.to(device)
+    out_predict = model(images)
+    _, predicted = torch.max(out_predict.data, 1)
+    for idx, each_image in enumerate(images[:5]):
+        each_image = each_image.cpu().permute(1, 2, 0).numpy()
+        image_label = labels[idx].cpu().numpy().squeeze()
+        print("True Label: ", image_label, " Predicted Label: ", predicted[idx].cpu().numpy().squeeze())
+        plt.imshow(each_image)
+        plt.show()
+        print("-------------")
