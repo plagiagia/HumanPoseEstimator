@@ -5,7 +5,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from scipy.ndimage import gaussian_filter
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 
 # =============================================================================
@@ -41,7 +41,7 @@ class AnnotationsDataset(Dataset):
         Clean the data from images with small boundary boxes or with no annotations
 
         Parameters:
-            data  : original annotation data
+            data  : orginal annotation data
 
         Returns:
             clean_annotations : cleaned annotations
@@ -111,18 +111,26 @@ class AnnotationsDataset(Dataset):
         x, y, w, h = annotation['bbox']
         heatmap_w = 48
         heatmap_h = 64
+        original_w = 192
+        orginal_h = 256
         rescaled_keypoints = np.ceil(
             (keypoints - [x, y, 0]) * (np.array([heatmap_w, heatmap_h, 1]) / np.array([w, h, 1]))).astype(np.int)
 
         heatmaps = np.zeros((17, 64, 48))
         for i in range(17):
             if rescaled_keypoints[i][2] > 0:
+
                 temp_x = rescaled_keypoints[i][1]
                 temp_y = rescaled_keypoints[i][0]
-                heatmaps[i, temp_x, temp_y] = 1.0
-                heatmaps[i, :, :] = gaussian_filter(heatmaps[i, :, :], sigma=2, mode='constant', cval=0.0)
-                heatmaps[i, :, :] = (heatmaps[i, :, :] - np.min(heatmaps[i, :, :])) / (
-                        np.max(heatmaps[i, :, :]) - np.min(heatmaps[i, :, :]))
+
+                if temp_x >= 64 or temp_y >= 48:
+                    rescaled_keypoints[i][2] = 0
+                    continue
+                else:
+                    heatmaps[i, temp_x, temp_y] = 1.0
+                    heatmaps[i, :, :] = gaussian_filter(heatmaps[i, :, :], sigma=2, mode='constant', cval=0.0)
+                    heatmaps[i, :, :] = (heatmaps[i, :, :] - np.min(heatmaps[i, :, :])) / (
+                            np.max(heatmaps[i, :, :]) - np.min(heatmaps[i, :, :]))
 
         validity = [1 if v > 0 else 0 for v in rescaled_keypoints[:, 2]]
 
@@ -135,8 +143,17 @@ class AnnotationsDataset(Dataset):
         return len(self.clean_annotations)
 
     def __getitem__(self, id):
-        annotation = self.data[id]
+        annotation = self.annotations[id]
         image = self.load_image(annotation)
         heatmap, validity = self.heatmaps(annotation)
 
         return {'image': image, 'heatmap': heatmap, 'validity': validity}
+
+
+# initialize Datasets
+train_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_train2017.json',
+                                   img_dir='./train2017')
+train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=0)
+
+val_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_val2017.json', img_dir='./val2017')
+val_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=0)
