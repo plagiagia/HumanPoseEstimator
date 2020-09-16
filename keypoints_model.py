@@ -1,5 +1,7 @@
 import torch.nn as nn
 
+from calculate_accuracy import *
+
 
 # Build the network
 class ConvNet(nn.Module):
@@ -86,3 +88,52 @@ class ConvNet(nn.Module):
         out = self.final_conv(out)
 
         return out
+
+    # Loss function
+    @staticmethod
+    def custom_l2_loss_closure(mse_loss_fn):
+        # We want to zero out the loss for when no label was provided in the target heatmap
+        # We can achieve this by multiply the validity tensor with the pred
+
+        def custom_l2_loss(pred, target, validity):
+            v = validity.unsqueeze(2).unsqueeze(2)
+            pred = pred * v
+            target = target * v
+            return mse_loss_fn(pred, target)
+
+        return custom_l2_loss
+
+    # function to store model checkpoint
+    def checkpoint_model(self, optimizer, epoch, batch, path):
+        state = {'model': self.state_dict(), 'optimizer': optimizer.state_dict()}
+        torch.save(state, path + "posenet_" + str(epoch) + "_" + str(batch) + '.pth')
+
+    def fit(self, epochs, train_dataloder, val_dataloader, optimizer, loss_fn, scheduler):
+        for j in range(epochs):
+            for i_batch, sample_batched in enumerate(train_dataloder):
+
+                input_img = sample_batched['image'].to('cuda')
+                heatmap = sample_batched['heatmap'].to('cuda')
+                validity = sample_batched['validity'].to('cuda')
+
+                # Clear out accumulated gradients
+                optimizer.zero_grad()
+
+                output = self(input_img)
+                loss = loss_fn(output, heatmap, validity)
+
+                loss.backward()
+                optimizer.step()
+
+                if i_batch % 500 == 0:
+                    acc_train = accuracy(output.detach().cpu().numpy(), heatmap.detach().cpu().numpy())
+                    acc_val = get_accuracy(self, val_dataloader)
+                    print("Epoch\t", j, "Batch\t", i_batch, "Training Loss: \t", loss.item(), "Train Accuracy: \t",
+                          acc_train,
+                          "Val Accuracy: \t", acc_val)
+
+                if i_batch % 5000 == 0:
+                    self.checkpoint_model(self, optimizer, j, i_batch)
+
+            scheduler.step()
+        self.checkpoint_model(self, optimizer, j, i_batch)

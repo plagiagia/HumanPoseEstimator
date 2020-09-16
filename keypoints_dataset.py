@@ -5,7 +5,7 @@ import torch
 import torchvision.transforms as transforms
 from PIL import Image
 from scipy.ndimage import gaussian_filter
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 
 # =============================================================================
@@ -108,14 +108,3 @@ class AnnotationsDataset(Dataset):
         heatmap, validity = self.heatmaps(annotation)
 
         return {'image': image, 'heatmap': heatmap, 'validity': validity}
-
-
-# initialize Datasets
-if __name__ == "__main__":
-    train_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_train2017.json',
-                                       img_dir='./train2017')
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=8)
-
-    val_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_val2017.json',
-                                     img_dir='./val2017')
-    val_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=4)
