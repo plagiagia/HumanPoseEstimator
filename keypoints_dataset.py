@@ -18,36 +18,18 @@ class AnnotationsDataset(Dataset):
         self.img_dir = img_dir
         self.data = self.read_json(self.annotations_path)
         self.annotations = self.data['annotations']
-        self.keypoint_names = self.data['categories'][0]['keypoints']
         # Clean annotations
-        self.clean_annotations = self.clean_data(data=self.data)
+        self.clean_annotations = self.clean_data()
 
-    def read_json(self, path):
-        """
-        Reads a json file and returns the data
-
-        Parameters:
-            path (string) : path to json file
-
-        Returns:
-            data (dict) : Dictionary from json file
-        """
+    @staticmethod
+    def read_json(path):
         with open(path, 'r') as f:
             data = json.load(f)
         return data
 
-    def clean_data(self, data):
-        """
-        Clean the data from images with small boundary boxes or with no annotations
-
-        Parameters:
-            data  : orginal annotation data
-
-        Returns:
-            clean_annotations : cleaned annotations
-        """
+    def clean_data(self):
         clean_annotations = []
-        for each_annot in data['annotations']:
+        for each_annot in self.annotations:
             # Checks if the picture shows more than one person
             if each_annot['iscrowd'] != 0:
                 continue
@@ -64,22 +46,12 @@ class AnnotationsDataset(Dataset):
         return clean_annotations
 
     def load_image(self, annotation):
-        """
-        Loads an image, apply transforms (rescale, resize, normalize, transformed to tensor)
-
-        Parameters:
-            annotation  : Image's annotations
-
-        Returns:
-            tensor_image : Image in tensor form, normalized, resized(192 x 256), rescaled(0...1)
-        """
         img_name = '000000000000'
         img_name = img_name[0:len(img_name) - len(str(annotation['image_id']))] + str(annotation['image_id']) + '.jpg'
         pil_image = Image.open(self.img_dir + '/' + img_name)
 
         x, y, w, h = annotation['bbox']
         resized_img = pil_image.resize((192, 256), box=(x, y, x + w, y + h))
-
         array = np.array(resized_img)
 
         # Add on more dimension in case image is Black & White
@@ -91,28 +63,16 @@ class AnnotationsDataset(Dataset):
                                               transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                                    std=[0.229, 0.224, 0.225])])
         rescaled_img = array / 255.
-        tensor_image = transformations(rescaled_img)
+        tensor_image = transformations(rescaled_img).float()
 
         return tensor_image
 
-    def heatmaps(self, annotation):
-        """
-        Creates heatmaps for an image
-
-        Parameters:
-            annotation  : Image's annotations
-
-        Returns:
-            heatmaps_tensor : Heatmaps in tensor form, shape(17, 64, 48)
-            validity_tensor : Tensor with all valid keypoints, shape (17,)
-        """
-
+    @staticmethod
+    def heatmaps(annotation):
         keypoints = np.array(annotation['keypoints']).reshape(17, 3)
         x, y, w, h = annotation['bbox']
         heatmap_w = 48
         heatmap_h = 64
-        original_w = 192
-        orginal_h = 256
         rescaled_keypoints = np.ceil(
             (keypoints - [x, y, 0]) * (np.array([heatmap_w, heatmap_h, 1]) / np.array([w, h, 1]))).astype(np.int)
 
@@ -123,7 +83,7 @@ class AnnotationsDataset(Dataset):
                 temp_x = rescaled_keypoints[i][1]
                 temp_y = rescaled_keypoints[i][0]
 
-                if temp_x >= 64 or temp_y >= 48:
+                if temp_x >= 64 or temp_y >= 48 or temp_x < 0 or temp_y < 0:
                     rescaled_keypoints[i][2] = 0
                     continue
                 else:
@@ -151,9 +111,11 @@ class AnnotationsDataset(Dataset):
 
 
 # initialize Datasets
-train_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_train2017.json',
-                                   img_dir='./train2017')
-train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=0)
+if __name__ == "__main__":
+    train_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_train2017.json',
+                                       img_dir='./train2017')
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=8)
 
-val_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_val2017.json', img_dir='./val2017')
-val_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=0)
+    val_dataset = AnnotationsDataset(annotations_path='./annotations/person_keypoints_val2017.json',
+                                     img_dir='./val2017')
+    val_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=4)
