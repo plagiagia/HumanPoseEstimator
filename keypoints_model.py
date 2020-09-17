@@ -7,6 +7,7 @@ from calculate_accuracy import *
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
+        self.checkpoint_path = 'model_checkpoints'
 
         # 1st CONVOLUTION, IN_CHANNELS = 3 (RGB), OUT_CHANNELS=64, KERNEL=7x7, STRIDE=2, PADDING=3
         self.Conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3)
@@ -104,9 +105,9 @@ class ConvNet(nn.Module):
         return custom_l2_loss
 
     # function to store model checkpoint
-    def checkpoint_model(self, optimizer, epoch, batch, path):
+    def checkpoint_model(self, optimizer, epoch, batch):
         state = {'model': self.state_dict(), 'optimizer': optimizer.state_dict()}
-        torch.save(state, path + "posenet_" + str(epoch) + "_" + str(batch) + '.pth')
+        torch.save(state, self.checkpoint_path + "_posenet_" + str(epoch) + "_" + str(batch) + '.pth')
 
     def fit(self, epochs, train_dataloder, val_dataloader, optimizer, loss_fn, scheduler):
         for j in range(epochs):
@@ -133,7 +134,7 @@ class ConvNet(nn.Module):
                           "Val Accuracy: \t", acc_val)
 
                 if i_batch % 5000 == 0:
-                    self.checkpoint_model(self, optimizer, j, i_batch)
+                    self.checkpoint_model(optimizer, j, i_batch)
 
             scheduler.step()
-        self.checkpoint_model(self, optimizer, j, i_batch)
+        self.checkpoint_model(optimizer, j, i_batch)

@@ -6,9 +6,8 @@ from keypoints_model import ConvNet
 
 if __name__ == "__main__":
     # CONSTANTS
-    LEARNING_RATE = 0.001
+    LEARNING_RATE = 0.0001
     NUM_EPOCHS = 10
-    EXPERIMENTS_PATH = "model_checkpoints/"
 
     # MODEL
     model = ConvNet()
@@ -22,7 +21,7 @@ if __name__ == "__main__":
                                      img_dir='./val2017')
 
     # DATA LOADER
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=8)
+    train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4)
     val_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=True, num_workers=4)
 
     # LOSS
