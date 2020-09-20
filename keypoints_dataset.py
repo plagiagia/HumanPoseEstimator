@@ -42,7 +42,7 @@ class AnnotationsDataset(Dataset):
                 continue
 
             clean_annotations.append(each_annot)
-
+        print("End Cleaning data....")
         return clean_annotations
 
     def load_image(self, annotation):
@@ -54,15 +54,12 @@ class AnnotationsDataset(Dataset):
         resized_img = pil_image.resize((192, 256), box=(x, y, x + w, y + h))
         array = np.array(resized_img)
 
-        # Add on more dimension in case image is Black & White
+        # # Add on more dimension in case image is Black & White
         if len(array.shape) != 3:
-            array = np.stack((array,) * 3, axis=-1)
-        #     array = np.atleast_3d(array)
+            array = np.stack((array,)*3, axis=-1)
 
-        transformations = transforms.Compose([transforms.ToTensor(),
-                                              transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                                   std=[0.229, 0.224, 0.225])])
         rescaled_img = array / 255.
+        transformations = transforms.Compose([transforms.ToTensor()])
         tensor_image = transformations(rescaled_img).float()
 
         return tensor_image

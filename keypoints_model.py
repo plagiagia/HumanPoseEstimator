@@ -126,14 +126,14 @@ class ConvNet(nn.Module):
                 loss.backward()
                 optimizer.step()
 
-                if i_batch % 500 == 0:
+                if i_batch % 100 == 0:
                     acc_train = accuracy(output.detach().cpu().numpy(), heatmap.detach().cpu().numpy())
                     acc_val = get_accuracy(self, val_dataloader)
                     print("Epoch\t", j, "Batch\t", i_batch, "Training Loss: \t", loss.item(), "Train Accuracy: \t",
                           acc_train,
                           "Val Accuracy: \t", acc_val)
 
-                if i_batch % 5000 == 0:
+                if i_batch % 500 == 0:
                     self.checkpoint_model(optimizer, j, i_batch)
 
             scheduler.step()
