@@ -85,3 +85,37 @@ After implementing the code for object detection where you can find [here](03.Hu
 ![Image from COCO dataset](static/object_detector.PNG)
 
 For each label is drawn a boundary box, the label is also plotted as the accuracy for each prediction
+
+## Chapter 4
+
+In this last chapter, I built and train a CNN model to detect all the keypoints on an image.
+
+### Approach
+
+Thinking of the problem we have to deal with the approach we have to take is to make a CNN, feed it with images and 
+the coordinates of the keypoints on the image and let the model train, and hopefully, it will make some accurate predictions 
+on some unseen images.
+
+But before go so far and make the model we have to think about how to approach this. We want to predict keypoints as coordinates,
+so we can make the model predict discreet values for each image. This approach as good as it sounds it is quite tedious, while we
+have to predict values with very little tolerance, so the model has to be quite accurate.
+
+The approach that is proposed by the project's authors is to predict a heatmap with all the keypoints of the image. 
+To do this we have to feed into the model one heatmap for each keypoint alongside the original image. So we don't have
+to predict discrete values, but an image showing the heatmap. 
+
+For this method, we are going to need a different way to calculate the accuracy of the model. You can find the original code
+[here](calculate_accuracy.py). This method calculates the Percentage of Correct Key-points (PCK) and used it as it was proposed.
+
+### Results
+The model takes some time to train. After that we can load the weights of the model and make some predictions on images 
+the model never has seen before. The model has around 0.5 -0.6 accuracy, its not so good but it is ok for a model trainned
+on a single gpu and only with 10 epochs.
+
+Input image with original heatmap:
+![img](static/original.PNG)
+
+Output predicted heatmap:
+![img](static/predictions.PNG)
+
+ As we can see the model captures quite good the keypoints appearing on the image.
